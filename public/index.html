@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classes Shop</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+
+        <header class="navigation">
+
+            <div>
+                <h1 v-text="sitename"></h1>
+            </div>
+
+            <div style="align-self: center;">
+                <button v-on:click="toggleShowProduct" v-if="cartCountItems > 0 || this.showProduct == false">
+                    {{ cartCountItems }}
+                    <span class="fas fa-shopping-cart"></span> Cart
+                </button>
+                <button id="disabled_button" disabled="disabled" v-else>
+                    <span class="fas fa-shopping-cart"></span> Cart</button>
+            </div>
+
+        </header>
+
+        <div v-if="showProduct">
+
+            <div id="search_wrap">
+                <span class="fas fa-search"></span>
+                <input type="text" v-model="search" placeholder="Search for classes..">
+            </div>
+
+            <div id="sort_panel">
+                <p>Sort by:</p>
+
+                <p>
+                    <input type="radio" id="price" value="price" v-model="sortType" v-on:click="sortProducts">
+                    <label for="price">Price</label>
+                    <input type="radio" id="spacesLeft" value="spacesLeft" v-model="sortType" v-on:click="sortProducts">
+                    <label for="spacesLeft">Spaces</label>
+                    <input type="radio" id="subject" value="title" v-model="sortType" v-on:click="sortProducts">
+                    <label for="subject">Subject</label>
+                    <input type="radio" id="location" value="location" v-model="sortType" v-on:click="sortProducts">
+                    <label for="location">Location</label>
+                </p>
+
+                <p>
+                    <input type="radio" id="ascending" value="ascending" v-model="chosenSort" v-on:click="sortProducts">
+                    <label for="ascending">Ascending</label>
+                    <input type="radio" id="descending" value="descending" v-model="chosenSort"
+                        v-on:click="sortProducts">
+                    <label for="descending">Descending</label>
+                </p>
+
+            </div>
+
+            <div class="class_windows" v-for="product in searchFilter">
+                <div id="panel_layout">
+                    <div id="text_layout">
+
+                        <img id="img" v-bind:src="product.imgSRC" v-bind:alt="product.imgALT" />
+                        <p>Subject: {{product.title}}</p>
+                        <p>Location: {{product.location}}</p>
+                        <p>Price: £{{product.price}}</p>
+                        <p>Assigned Spaces: {{ product.spaces }} </p>
+
+                        <div id="button_align">
+                            <span v-if="itemsLeft(product) === 0">
+                                No spaces available!
+                            </span>
+
+                            <span v-else-if="itemsLeft(product) < 5">
+                                Only {{itemsLeft(product)}} left!
+                            </span>
+
+                            <span v-else>
+                                Buy Now!
+                            </span>
+
+                            <button v-on:click="addToCart(product)" v-if="canAddToCart(product)">Add to
+                                cart</button>
+                            <button id="disabled_button" disabled="disabled" v-else>Add to cart</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="welcome_page" v-else>
+
+            <h1 v-if="!cart.length">Your cart is EMPTY, click "Cart" to shop for classes!</h1>
+
+            <div v-if="cart.length">
+
+                <h1>Shopping Cart</h1>
+
+                <div class="class_windows" v-for="product in cart">
+                    <div id="panel_layout">
+                        <div id="text_layout">
+
+                            <img id="img" v-bind:src="product.imgSRC" v-bind:alt="product.imgALT" />
+                            <p>Subject: {{product.title}}</p>
+                            <p>Location: {{product.location}}</p>
+                            <p>Price: £{{product.price}}</p>
+
+                            <div id="button_align">
+                                <button v-on:click="removeFromCart(product)">Remove from
+                                    cart</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <h1>Checkout</h1>
+
+                <div id="checkout_form">
+                    Name:
+                    <input type="text" @keydown="checkName($event)" v-model="checkout.name">
+                    <span v-html="errorName"></span>
+
+                    Phone:
+                    <input type="text" @keydown="checkPhoneNumber($event)" v-model.trim="checkout.phoneNumber">
+                    <span v-html="errorPhone"></span>
+
+                    <button v-on:click="submitCheckoutForm" v-if="goodPhone && goodName">Place Order</button>
+                    <button id="disabled_button" disabled="disabled" v-else>Place Order</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        var app = new Vue({
+            el: '#app',
+            data: {
+                sitename: "Classes Shop",
+                showProduct: true,
+                products: [],
+                goodName: false,
+                goodPhone: false,
+                errorName: "",
+                errorPhone: "",
+                cart: [],
+                sortType: "",
+                chosenSort: "",
+                search: null,
+                checkout: {
+                    name: "",
+                    phoneNumber: "",
+                },
+            },
+            created: function () {
+                fetch("http://localhost:3000/collections/products").then(
+                    function (response) {
+                        response.json().then(function (json) { app.products = json; })
+                    }
+                )
+            },
+            methods: {
+                addToCart: function (product) {
+                    this.cart.push(product);
+                    product.spacesLeft -= 1;
+                },
+                removeFromCart: function (product) {
+                    this.cart.splice(this.cart.indexOf(product.id));
+                },
+                toggleShowProduct: function () {
+                    this.showProduct = this.showProduct ? false : true;
+                },
+                submitCheckoutForm: function () {
+                    alert("Congratulations " + this.checkout.name + ", your order was submitted! Your phone number is " + this.checkout.phoneNumber + ".");
+                    location.reload();
+                },
+                canAddToCart: function (product) {
+                    return product.spaces > this.cartCount(product);
+                },
+                cartCount: function (id) {
+                    let count = 0;
+                    for (let i = 0; i < this.cart.length; i++) {
+                        if (this.cart[i] === id) {
+                            count++;
+                        }
+                    }
+                    return count;
+                },
+                itemsLeft: function (product) {
+                    return product.spaces - this.cartCount(product);
+                },
+                sortProducts: function () {
+                    let compare = this.products.sort((a, b) => {
+                        if (this.chosenSort == "ascending") {
+                            if (a[this.sortType] > b[this.sortType]) return 1;
+                            if (a[this.sortType] < b[this.sortType]) return -1;
+                            return 0;
+                        } else if (this.chosenSort == "descending") {
+                            if (a[this.sortType] < b[this.sortType]) return 1;
+                            if (a[this.sortType] > b[this.sortType]) return -1;
+                            return 0;
+                        }
+                    });
+                    return compare;
+                },
+                checkName: function (e) {
+                    let char = String.fromCharCode(e.keyCode);
+                    if (/^[A-Za-z]+$/.test(char)) {
+                        this.goodName = true;
+                        this.errorName = "";
+                    }
+                    else {
+                        this.errorName = "LETTERS ONLY!";
+                        this.goodName = false;
+                    }
+                },
+                checkPhoneNumber: function (e) {
+                    let char = String.fromCharCode(e.keyCode);
+                    if (/^[0-9]*$/.test(char)) {
+                        this.goodPhone = true;
+                        this.errorPhone = "";
+                    }
+                    else {
+                        this.errorPhone = "NUMBERS ONLY!";
+                        this.goodPhone = false;
+                    }
+                },
+            },
+            computed: {
+                cartCountItems: function () {
+                    return this.cart.length || "";
+                },
+                searchFilter: function () {
+                    if (this.search) {
+                        return this.products.filter((item) => {
+                            return (item.title.toLowerCase().match(this.search) || item.location.toLowerCase().match(this.search) || item.location.toUpperCase().match(this.search) || item.title.toUpperCase().match(this.search) || item.location.match(this.search) || item.title.match(this.search))
+                        })
+                    } else {
+                        return this.products;
+                    }
+                }
+            },
+        });
+    </script>
+
+</body>
+
+</html>
