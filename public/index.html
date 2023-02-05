@@ -163,7 +163,7 @@
                 },
             },
             created: function () {
-                fetch("http://localhost:3000/collections/products").then(
+                fetch("http://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products").then(
                     function (response) {
                         response.json().then(function (json) { app.products = json; })
                     }
