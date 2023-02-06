@@ -29,9 +29,6 @@
                 <button id="disabled_button" disabled="disabled" v-else>
                     <span class="fas fa-shopping-cart"></span> Cart
                 </button>
-                <button @click="saveProductToDB">
-                    <span class="fas fa-save"></span>AWS
-                </button>
             </div>
 
         </header>
@@ -137,7 +134,7 @@
                     <input type="text" @keydown="checkPhoneNumber($event)" v-model.trim="checkout.phoneNumber">
                     <span v-html="errorPhone"></span>
 
-                    <button v-on:click="submitCheckoutForm" v-if="goodPhone && goodName">Place Order</button>
+                    <button v-on:click="saveCartToDB" v-if="goodPhone && goodName">Place Order</button>
                     <button id="disabled_button" disabled="disabled" v-else>Place Order</button>
                 </div>
 
@@ -239,18 +236,52 @@
                         this.goodPhone = false;
                     }
                 },
-                saveProductToDB: function () {
-                    const newProduct = {
-                        "id": 1011,
-                        "imgALT": "Math img",
-                        "imgSRC": "class_icons/math.png",
-                        "title": "Math",
-                        "location": "Cardiff",
-                        "price": 32.99,
-                        "spaces": 5,
-                        "spacesLeft": 5
+                saveCartToDB: function () {
+                    let productIds = [];
+                    let productCounts = {};
+                    for (let i = 0; i < this.cart.length; i++) {
+                        let id = this.cart[i].id;
+                        if (productCounts[id]) {
+                            productCounts[id]++;
+                        } else {
+                            productCounts[id] = 1;
+                        }
                     }
-                    fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products", {
+
+                    for (const [lesson_id, number_of_spaces] of Object.entries(productCounts)) {
+                        productIds.push({ lesson_id, number_of_spaces });
+                    }
+
+                    for (let i = 0; i < this.cart.length; i++) {
+                        let id = this.cart[i].id;
+                        let objectId = this.cart[i]._id;
+
+                        fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products/" + objectId, {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({
+                                "spaces": this.cart[i].spaces - productCounts[id],
+                                "spacesLeft": this.cart[i].spaces - productCounts[id]
+                            })
+                        }).then(
+                            function (response) {
+                                response.json().then(
+                                    function (json) {
+                                        console.log("Success: " + json.acknowledged);
+                                    }
+                                )
+                            }
+                        )
+                    }
+
+                    const newProduct = {
+                        "name": this.checkout.name,
+                        "phone_number": this.checkout.phoneNumber,
+                        "cart": productIds,
+                    }
+                    fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/cart", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -262,8 +293,8 @@
                                 function (json) {
                                     alert("Success: " + json.acknowledged);
                                     console.log("Success: " + json.acknowledged);
-
                                     app.products.push(newProduct);
+                                    location.reload();
                                 }
                             )
                         }
