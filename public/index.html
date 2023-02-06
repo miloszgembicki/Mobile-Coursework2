@@ -167,7 +167,7 @@
                 },
             },
             created: function () {
-                fetch("http://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products").then(
+                fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products").then(
                     function (response) {
                         response.json().then(function (json) { app.products = json; })
                     }
@@ -250,7 +250,7 @@
                         "spaces": 5,
                         "spacesLeft": 5
                     }
-                    fetch("http://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products", {
+                    fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
