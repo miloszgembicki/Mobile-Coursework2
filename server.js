@@ -43,24 +43,16 @@ app.use(morgan("short"));
 // Use express.json() middleware for parsing JSON requests
 app.use(express.json());
 
-// Define a middleware for setting the collection for the request
-app.param('collectionName', function (req, res, next, collectionName) {
-    req.collection = db.collection(collectionName);
-    return next();
-});
-
 //Middleware for "logger"
 app.use(function (req, res, next) {
     console.log("Receive request with method: " + req.method + " and url: " + req.url);
     next();
 });
 
-//Middleware for image
-var staticPath = path.join(__dirname, "public/class_icons");
-app.use(express.static(staticPath));
-app.use(function (req, res) {
-    res.status(404);
-    res.send("File not found!");
+// Define a middleware for setting the collection for the request
+app.param('collectionName', function (req, res, next, collectionName) {
+    req.collection = db.collection(collectionName);
+    return next();
 });
 
 // Define a root route for the app
@@ -107,6 +99,14 @@ app.put('/collections/:collectionName/:id', function (req, res, next) {
                 res.send((results.matchedCount === 1) ? { msg: "success" } : { msg: "error" });
             }
         });
+});
+
+//Middleware for image
+var staticPath = path.join(__dirname, "public/class_icons");
+app.use(express.static(staticPath));
+app.use(function (req, res) {
+    res.status(404);
+    res.send("File not found!");
 });
 
 // Middleware to handle 404 errors
