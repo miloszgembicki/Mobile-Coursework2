@@ -72,7 +72,7 @@ app.post('/collections/:collectionName', function (req, res, next) {
             // Call the next middleware with an error if there is an error
             return next(err);
         }
-        // Send the results to the client
+        // Send the results to the clien
         res.send(results);
     });
 });
