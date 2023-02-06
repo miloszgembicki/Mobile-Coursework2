@@ -27,7 +27,11 @@
                     <span class="fas fa-shopping-cart"></span> Cart
                 </button>
                 <button id="disabled_button" disabled="disabled" v-else>
-                    <span class="fas fa-shopping-cart"></span> Cart</button>
+                    <span class="fas fa-shopping-cart"></span> Cart
+                </button>
+                <button @click="saveProductToDB">
+                    <span class="fas fa-save"></span>AWS
+                </button>
             </div>
 
         </header>
@@ -235,6 +239,36 @@
                         this.goodPhone = false;
                     }
                 },
+                saveProductToDB: function () {
+                    const newProduct = {
+                        "id": 1011,
+                        "imgALT": "Math img",
+                        "imgSRC": "class_icons/math.png",
+                        "title": "Math",
+                        "location": "Cardiff",
+                        "price": 32.99,
+                        "spaces": 5,
+                        "spacesLeft": 5
+                    }
+                    fetch("http://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(newProduct)
+                    }).then(
+                        function (response) {
+                            response.json().then(
+                                function (json) {
+                                    alert("Success: " + json.acknowledged);
+                                    console.log("Success: " + json.acknowledged);
+
+                                    app.products.push(newProduct);
+                                }
+                            )
+                        }
+                    )
+                }
             },
             computed: {
                 cartCountItems: function () {
