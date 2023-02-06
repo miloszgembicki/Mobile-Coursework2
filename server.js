@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const path = require("path");
+const fs = require("fs");
 
 // Read the database properties from a properties file
 let propertiesReader = require("properties-reader");
@@ -46,6 +47,20 @@ app.use(express.json());
 app.param('collectionName', function (req, res, next, collectionName) {
     req.collection = db.collection(collectionName);
     return next();
+});
+
+//Middleware for "logger"
+app.use(function (req, res, next) {
+    console.log("Receive request with method: " + req.method + " and url: " + req.url);
+    next();
+});
+
+//Middleware for image
+var staticPath = path.join(__dirname, "public/class_icons");
+app.use(express.static(staticPath));
+app.use(function (req, res) {
+    res.status(404);
+    res.send("File not found!");
 });
 
 // Define a root route for the app
