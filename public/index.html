@@ -249,7 +249,6 @@
                         function (response) {
                             response.json().then(
                                 function (json) {
-                                    alert("Success: " + json.acknowledged);
                                     console.log("Success: " + json.acknowledged);
 
                                     app.products.push(newProduct);
@@ -287,7 +286,7 @@
                     this.showProduct = this.showProduct ? false : true;
                 },
                 submitCheckoutForm: function () {
-                    alert("Congratulations " + this.checkout.name + ", your order was submitted! Your phone number is " + this.checkout.phoneNumber + ".");
+                    //alert("Congratulations " + this.checkout.name + ", your order was submitted! Your phone number is " + this.checkout.phoneNumber + ".");
                     location.reload();
                 },
                 canAddToCart: function (product) {
