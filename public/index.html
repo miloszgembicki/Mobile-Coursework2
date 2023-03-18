@@ -2,14 +2,20 @@
 <html lang="en">
 
 <head>
+    <script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Classes Shop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
-    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+    <link rel="manifest" href="webstore.webmanifest">
+    <link rel="icon" type="image/x-icon" href="class_icons/favicon.ico">
+
+    <script src="https://unpkg.com/vue@2.7.8/dist/vue.js">
+    </script>
 
     <link rel="stylesheet" href="style.css">
+    <script src="products.js"></script>
 </head>
 
 <body>
@@ -149,7 +155,8 @@
             data: {
                 sitename: "Classes Shop",
                 showProduct: true,
-                products: [],
+                //products: [],
+                products: products,
                 goodName: false,
                 goodPhone: false,
                 errorName: "",
@@ -164,12 +171,16 @@
                 },
             },
             created: function () {
-                fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products").then(
-                    function (response) {
-                        response.json().then(function (json) { app.products = json; })
-                    }
-                )
+                //     fetch("https://coursework-env.eba-8ryb6pbz.eu-west-2.elasticbeanstalk.com/collections/products").then(
+                //         function (response) {
+                //             response.json().then(function (json) { app.products = json; })
+                //         }
+                //     )
+                if ("serviceWorker" in navigator) {
+                    navigator.serviceWorker.register("service-worker.js");
+                }
             },
+
             methods: {
                 addToCart: function (product) {
                     this.cart.push(product);
